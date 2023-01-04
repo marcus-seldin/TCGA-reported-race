@@ -9,4 +9,4 @@
 ##### Fig 1 - broad race comparisons.R
 
 #### 2. Differential expression results summaries for differentially-expressed genes and mutational data within self-reported races:
-##### Fig 2 - DE analyses based on sex and cancer status.R
+##### Fig 2 - regression stats comparisons.R
