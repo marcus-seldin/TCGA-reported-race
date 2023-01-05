@@ -264,3 +264,169 @@ ff1$adp_Co = factor(ff1$adp_Co, levels = c('adj_P < 0.01', 'adj_P < 0.001',  'ad
 pdf(file = 'sex differences TCGA by race - colon adenocarcinoma.pdf')
 ggplot(ff1, aes(x=adp_Co, fill=race)) + geom_bar() + theme_minimal() + scale_fill_manual(values = rev(met.brewer('Moreau', length(unique(ff1$race))))) + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + ggtitle('number if significant genes DE Male vs Female - colon adenocarcinoma') + ylab('Number of DEGs M vs F - Limma') + xlab('')
 dev.off()
+
+
+#################################################################
+#Now linear regressions with survival in deceased patients
+
+surv_days_cor = tt3 = sample_table[sample_table$OS==1,]
+cnts_mat1 = cnts_mat[row.names(cnts_mat) %in% tt3$sample,]
+tt3 = tt3[tt3$sample %in% row.names(cnts_mat1),]
+cors_table = bicorAndPvalue(cnts_mat1, tt3$OS.time, use = 'p')
+bic_table = reshape2::melt(cors_table$bicor)
+bic_table$Var2 = NULL
+colnames(bic_table) = c('gene_symbol', 'bicor')
+pval = reshape2::melt(cors_table$p)
+bic_table$pvalue = pval$value
+bic_table = na.omit(bic_table)
+qest = qvalue(bic_table$pvalue)
+bic_table$qvalue = qest$qvalues
+bic_table$race = paste0('combined')
+full_cors_table = bic_table
+
+surv_days_cor = function(race_call)
+  {tt3 = sample_table[sample_table$OS==1,]
+tt3 = tt3[tt3$race %in% race_call,]
+  cnts_mat1 = cnts_mat[row.names(cnts_mat) %in% tt3$sample,]
+tt3 = tt3[tt3$sample %in% row.names(cnts_mat1),]
+cors_table = bicorAndPvalue(cnts_mat1, tt3$OS.time, use = 'p')
+bic_table = reshape2::melt(cors_table$bicor)
+bic_table$Var2 = NULL
+colnames(bic_table) = c('gene_symbol', 'bicor')
+pval = reshape2::melt(cors_table$p)
+bic_table$pvalue = pval$value
+bic_table = na.omit(bic_table)
+qest = qvalue(bic_table$pvalue)
+bic_table$qvalue = qest$qvalues
+bic_table$race = paste0(race_call)
+return(data.frame(bic_table))}
+asn_surv = surv_days_cor('ASIAN')
+whi_surv = surv_days_cor('WHITE')
+bla_surv = surv_days_cor('BLACK OR AFRICAN AMERICAN')
+nat_surv = surv_days_cor('AMERICAN INDIAN OR ALASKA NATIVE')
+pac_surv = surv_days_cor('NATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER')
+
+full_cors_table = as.data.frame(rbind(full_cors_table, asn_surv, whi_surv, bla_surv, nat_surv, pac_surv))
+
+ff1 = full_cors_table[full_cors_table$qvalue<0.05,]
+ff1$adp_Co = ifelse(ff1$qvalue<0.01, 'qvalue <0.01', 'qvalue <0.05')
+ff1$adp_Co = ifelse(ff1$qvalue<1e-3, 'qvalue <1e-3', paste0(ff1$adp_Co))
+ff1$adp_Co = ifelse(ff1$qvalue<1e-5, 'qvalue <1e-5', paste0(ff1$adp_Co))
+ff1$adp_Co = ifelse(ff1$qvalue<1e-10, 'qvalue <1e-10', paste0(ff1$adp_Co))
+ff1 = na.omit(ff1)
+ff1$adp_Co = factor(ff1$adp_Co, levels = c('qvalue <0.05', 'qvalue <0.01',  'qvalue <1e-3', 'qvalue <1e-5', 'qvalue <1e-10' ))
+pdf(file = 'TCGA survival time by race - pancancer.pdf')
+ggplot(ff1, aes(x=adp_Co, fill=race)) + geom_bar() + theme_minimal() + scale_fill_manual(values = rev(met.brewer('Moreau', length(unique(ff1$race))))) + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + ggtitle('TCGA survival time by race - pancancer.pdf') + ylab('Number of genes correlated with survival time') + xlab('')
+dev.off()
+
+
+
+######################################################## diffuse large B-cell lymphoma
+tt3 = sample_table[sample_table$OS==1,]
+tt3 = tt3[tt3$cancer_type=='diffuse large B-cell lymphoma',]
+cnts_mat1 = cnts_mat[row.names(cnts_mat) %in% tt3$sample,]
+tt3 = tt3[tt3$sample %in% row.names(cnts_mat1),]
+cors_table = bicorAndPvalue(cnts_mat1, tt3$OS.time, use = 'p')
+bic_table = reshape2::melt(cors_table$bicor)
+bic_table$Var2 = NULL
+colnames(bic_table) = c('gene_symbol', 'bicor')
+pval = reshape2::melt(cors_table$p)
+bic_table$pvalue = pval$value
+bic_table = na.omit(bic_table)
+qest = qvalue(bic_table$pvalue)
+bic_table$qvalue = qest$qvalues
+bic_table$race = paste0('combined')
+full_cors_table = bic_table
+
+surv_days_cor = function(race_call)
+{tt3 = sample_table[sample_table$OS==1,]
+tt3 = tt3[tt3$cancer_type=='diffuse large B-cell lymphoma',]
+tt3 = tt3[tt3$race %in% race_call,]
+cnts_mat1 = cnts_mat[row.names(cnts_mat) %in% tt3$sample,]
+tt3 = tt3[tt3$sample %in% row.names(cnts_mat1),]
+cors_table = bicorAndPvalue(cnts_mat1, tt3$OS.time, use = 'p')
+bic_table = reshape2::melt(cors_table$bicor)
+bic_table$Var2 = NULL
+colnames(bic_table) = c('gene_symbol', 'bicor')
+pval = reshape2::melt(cors_table$p)
+bic_table$pvalue = pval$value
+bic_table = na.omit(bic_table)
+qest = qvalue(bic_table$pvalue)
+bic_table$qvalue = qest$qvalues
+bic_table$race = paste0(race_call)
+return(data.frame(bic_table))}
+asn_surv = surv_days_cor('ASIAN')
+whi_surv = surv_days_cor('WHITE')
+bla_surv = surv_days_cor('BLACK OR AFRICAN AMERICAN')
+nat_surv = surv_days_cor('AMERICAN INDIAN OR ALASKA NATIVE')
+pac_surv = surv_days_cor('NATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER')
+
+full_cors_table = as.data.frame(rbind(full_cors_table, asn_surv, whi_surv #bla_surv, nat_surv, pac_surv
+                                      ))
+ff1 = full_cors_table[full_cors_table$qvalue<0.5,]
+ff1$adp_Co = ifelse(ff1$qvalue<0.01, 'qvalue <0.01', 'qvalue <0.1')
+ff1$adp_Co = ifelse(ff1$qvalue<1e-3, 'qvalue <1e-3', paste0(ff1$adp_Co))
+ff1$adp_Co = ifelse(ff1$qvalue<1e-5, 'qvalue <1e-5', paste0(ff1$adp_Co))
+ff1$adp_Co = ifelse(ff1$qvalue<1e-10, 'qvalue <1e-10', paste0(ff1$adp_Co))
+ff1 = na.omit(ff1)
+ff1$adp_Co = factor(ff1$adp_Co, levels = c('qvalue <0.1', 'qvalue <0.01',  'qvalue <1e-3', 'qvalue <1e-5', 'qvalue <1e-10' ))
+pdf(file = 'TCGA survival time by race - diffuse large B-cell lymphoma.pdf')
+ggplot(ff1, aes(x=adp_Co, fill=race)) + geom_bar() + theme_minimal() + scale_fill_manual(values = rev(met.brewer('Moreau', length(unique(ff1$race))))) + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + ggtitle('TCGA survival time by race - diffuse large B-cell lymphoma.pdf') + ylab('Number of genes correlated with survival time') + xlab('')
+dev.off()
+
+
+##################### colon adenocarcinoma
+tt3 = sample_table[sample_table$OS==1,]
+tt3 = tt3[tt3$cancer_type=='colon adenocarcinoma',]
+cnts_mat1 = cnts_mat[row.names(cnts_mat) %in% tt3$sample,]
+tt3 = tt3[tt3$sample %in% row.names(cnts_mat1),]
+cors_table = bicorAndPvalue(cnts_mat1, tt3$OS.time, use = 'p')
+bic_table = reshape2::melt(cors_table$bicor)
+bic_table$Var2 = NULL
+colnames(bic_table) = c('gene_symbol', 'bicor')
+pval = reshape2::melt(cors_table$p)
+bic_table$pvalue = pval$value
+bic_table = na.omit(bic_table)
+qest = qvalue(bic_table$pvalue)
+bic_table$qvalue = qest$qvalues
+bic_table$race = paste0('combined')
+full_cors_table = bic_table
+
+surv_days_cor = function(race_call)
+{tt3 = sample_table[sample_table$OS==1,]
+tt3 = tt3[tt3$cancer_type=='colon adenocarcinoma',]
+tt3 = tt3[tt3$race %in% race_call,]
+cnts_mat1 = cnts_mat[row.names(cnts_mat) %in% tt3$sample,]
+tt3 = tt3[tt3$sample %in% row.names(cnts_mat1),]
+cors_table = bicorAndPvalue(cnts_mat1, tt3$OS.time, use = 'p')
+bic_table = reshape2::melt(cors_table$bicor)
+bic_table$Var2 = NULL
+colnames(bic_table) = c('gene_symbol', 'bicor')
+pval = reshape2::melt(cors_table$p)
+bic_table$pvalue = pval$value
+bic_table = na.omit(bic_table)
+qest = qvalue(bic_table$pvalue)
+bic_table$qvalue = qest$qvalues
+bic_table$race = paste0(race_call)
+return(data.frame(bic_table))}
+asn_surv = surv_days_cor('ASIAN')
+whi_surv = surv_days_cor('WHITE')
+bla_surv = surv_days_cor('BLACK OR AFRICAN AMERICAN')
+nat_surv = surv_days_cor('AMERICAN INDIAN OR ALASKA NATIVE')
+pac_surv = surv_days_cor('NATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER')
+
+full_cors_table = as.data.frame(rbind(full_cors_table, #asn_surv, 
+                                      whi_surv, bla_surv 
+                                      #nat_surv, pac_surv
+                                      ))
+
+ff1 = full_cors_table[full_cors_table$qvalue<0.05,]
+ff1$adp_Co = ifelse(ff1$qvalue<0.01, 'qvalue <0.01', 'qvalue <0.05')
+ff1$adp_Co = ifelse(ff1$qvalue<1e-3, 'qvalue <1e-3', paste0(ff1$adp_Co))
+ff1$adp_Co = ifelse(ff1$qvalue<1e-5, 'qvalue <1e-5', paste0(ff1$adp_Co))
+ff1$adp_Co = ifelse(ff1$qvalue<1e-10, 'qvalue <1e-10', paste0(ff1$adp_Co))
+ff1 = na.omit(ff1)
+ff1$adp_Co = factor(ff1$adp_Co, levels = c('qvalue <0.05', 'qvalue <0.01',  'qvalue <1e-3', 'qvalue <1e-5', 'qvalue <1e-10' ))
+pdf(file = 'TCGA survival time by race - colon adenocarcinoma.pdf')
+ggplot(ff1, aes(x=adp_Co, fill=race)) + geom_bar() + theme_minimal() + scale_fill_manual(values = rev(met.brewer('Moreau', length(unique(ff1$race))))) + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + ggtitle('TCGA survival time by race - colon adenocarcinoma.pdf') + ylab('Number of genes correlated with survival time') + xlab('')
+dev.off()
